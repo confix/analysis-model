@@ -1,5 +1,6 @@
 package edu.hm.hafner.analysis;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -8,6 +9,8 @@ import java.util.SortedSet;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Predicate;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -23,9 +26,20 @@ import static java.util.stream.Collectors.*;
  * @author Ullrich Hafner
  */
 // TODO: findByProperty with hardcoded properties?
-public class Issues implements Iterable<Issue> {
+public class Issues implements Iterable<Issue>, Serializable {
     private final List<Issue> elements = new ArrayList<>();
+    private final StringBuilder logMessages = new StringBuilder();
     private final int[] sizeOfPriority = new int[Priority.values().length];
+    private String path;
+    private String moduleName;
+
+    public Issues(final String path) {
+        this.path = path;
+    }
+
+    public Issues() {
+        this(StringUtils.EMPTY);
+    }
 
     /**
      * Appends the specified element to the end of this container.
@@ -54,6 +68,19 @@ public class Issues implements Iterable<Issue> {
         return issues;
     }
 
+    /**
+     * Appends all of the elements in the specified collection to the end of this container, in the order that they are
+     * returned by the specified collection's iterator.
+     *
+     * @param issues the issues to append
+     * @return returns the appended issues
+     */
+    public Collection<? extends Issue> addAll(final Issues issues) {
+        for (Issue issue : issues) {
+            add(issue);
+        }
+        return issues.all();
+    }
 
     /**
      * Removes the the issue with the specified ID.
@@ -215,5 +242,38 @@ public class Issues implements Iterable<Issue> {
         Issues copied = new Issues();
         copied.addAll(all());
         return copied;
+    }
+
+    /**
+     * Sets the absolute path for all affected files to the specified value.
+     *
+     * @param path the path
+     */
+    public void setPath(final String path) {
+        this.path = path;
+        // TODO: issue property? Or is this better suited in the AbsoluteFileNamesMapper
+    }
+
+    public void setModuleName(final String moduleName) {
+        this.moduleName = moduleName;
+        // TODO: issue property?
+    }
+
+    /**
+     * Logs the specified message.
+     *
+     * @param format
+     *         A <a href="../util/Formatter.html#syntax">format string</a>
+     * @param args
+     *         Arguments referenced by the format specifiers in the format string.  If there are more arguments than
+     *         format specifiers, the extra arguments are ignored.  The number of arguments is variable and may be zero.
+     */
+    public void log(final String format, final Object... args) {
+        logMessages.append(String.format(format, args));
+        logMessages.append('\n');
+    }
+
+    public String getLogMessages() {
+        return logMessages.toString();
     }
 }

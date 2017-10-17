@@ -2,6 +2,9 @@ package edu.hm.hafner.analysis.parser;
 
 import java.util.regex.Matcher;
 
+import org.kohsuke.MetaInfServices;
+
+import edu.hm.hafner.analysis.AbstractParser;
 import edu.hm.hafner.analysis.FastRegexpLineParser;
 import edu.hm.hafner.analysis.Issue;
 
@@ -10,6 +13,7 @@ import edu.hm.hafner.analysis.Issue;
  *
  * @author jerryshea
  */
+@MetaInfServices(AbstractParser.class)
 public class AcuCobolParser extends FastRegexpLineParser {
     private static final long serialVersionUID = -894639209290549425L;
     private static final String ACU_COBOL_WARNING_PATTERN = "^\\s*(\\[.*\\])?\\s*?(.*), line ([0-9]*): Warning: (.*)$";

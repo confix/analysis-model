@@ -1,6 +1,7 @@
 package edu.hm.hafner.analysis;
 
 import javax.annotation.CheckForNull;
+import java.io.Serializable;
 import java.util.UUID;
 
 import org.apache.commons.lang3.ObjectUtils;
@@ -11,7 +12,8 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Ullrich Hafner
  */
-public class Issue {
+// Add module that is the same for a parser scan
+public class Issue implements Serializable {
     private static final String UNDEFINED = "-";
 
     private final String fileName;
@@ -23,6 +25,7 @@ public class Issue {
     private final String description;
 
     private final String packageName;
+    private final String moduleName;
 
     private final int lineStart;
     private final int lineEnd;
@@ -36,24 +39,38 @@ public class Issue {
     /**
      * Creates a new instance of {@link Issue} using the specified properties.
      *
-     * @param fileName    the name of the file that contains this issue
-     * @param lineStart   the first line of this issue (lines start at 1; 0 indicates the whole file)
-     * @param lineEnd     the last line of this issue (lines start at 1)
-     * @param columnStart the first column of this issue (columns start at 1, 0 indicates the whole line)
-     * @param columnEnd   the last column of this issue (columns start at 1)
-     * @param category    the category of this issue (depends on the available categories of the static analysis tool)
-     * @param type        the type of this issue (depends on the available types of the static analysis tool)
-     * @param packageName the name of the package (or name space) that contains this issue
-     * @param priority    the priority of this issue
-     * @param message     the detail message of this issue
-     * @param description the description for this issue
+     * @param fileName
+     *         the name of the file that contains this issue
+     * @param lineStart
+     *         the first line of this issue (lines start at 1; 0 indicates the whole file)
+     * @param lineEnd
+     *         the last line of this issue (lines start at 1)
+     * @param columnStart
+     *         the first column of this issue (columns start at 1, 0 indicates the whole line)
+     * @param columnEnd
+     *         the last column of this issue (columns start at 1)
+     * @param category
+     *         the category of this issue (depends on the available categories of the static analysis tool)
+     * @param type
+     *         the type of this issue (depends on the available types of the static analysis tool)
+     * @param packageName
+     *         the name of the package (or name space) that contains this issue
+     * @param moduleName
+     *         the name of the moduleName (or project) that contains this issue
+     * @param priority
+     *         the priority of this issue
+     * @param message
+     *         the detail message of this issue
+     * @param description
+     *         the description for this issue
      */
     @SuppressWarnings("ParameterNumber")
     Issue(@CheckForNull final String fileName,
-          final int lineStart, final int lineEnd, final int columnStart, final int columnEnd,
-          @CheckForNull final String category, @CheckForNull final String type, @CheckForNull final String packageName,
-          @CheckForNull final Priority priority,
-          @CheckForNull final String message, @CheckForNull final String description) {
+            final int lineStart, final int lineEnd, final int columnStart, final int columnEnd,
+            @CheckForNull final String category, @CheckForNull final String type,
+            @CheckForNull final String packageName, @CheckForNull final String moduleName,
+            @CheckForNull final Priority priority,
+            @CheckForNull final String message, @CheckForNull final String description) {
         this.fileName = defaultString(StringUtils.replace(StringUtils.strip(fileName), "\\", "/"));
 
         this.lineStart = defaultInteger(lineStart);
@@ -65,6 +82,7 @@ public class Issue {
         this.type = defaultString(type);
 
         this.packageName = defaultString(packageName);
+        this.moduleName = defaultString(moduleName);
 
         this.priority = ObjectUtils.defaultIfNull(priority, Priority.NORMAL);
         this.message = StringUtils.stripToEmpty(message);
@@ -194,6 +212,15 @@ public class Issue {
     }
 
     /**
+     * Returns the name of the module or project (or similar concept) that contains this issue.
+     *
+     * @return the module
+     */
+    public String getModuleName() {
+        return moduleName;
+    }
+
+    /**
      * Returns the finger print for this issue. Used to decide if two issues are equal even if the equals method returns
      * {@code false} since some of the properties differ due to code refactorings. The fingerprint is created by
      * analyzing the content of the affected file.
@@ -208,7 +235,9 @@ public class Issue {
     /**
      * Sets the finger print for this issue.
      *
-     * @param fingerprint the fingerprint for this issue
+     * @param fingerprint
+     *         the fingerprint for this issue
+     *
      * @see #getFingerprint()
      */
     public void setFingerprint(final String fingerprint) {
@@ -220,17 +249,16 @@ public class Issue {
         return String.format("%s(%d,%d): %s: %s: %s", fileName, lineStart, columnStart, type, category, message);
     }
 
-    @Override
-    @SuppressWarnings("all")
-    public boolean equals(final Object obj) {
-        if (this == obj) {
+    @Override @SuppressWarnings("all")
+    public boolean equals(final Object o) {
+        if (this == o) {
             return true;
         }
-        if (obj == null || getClass() != obj.getClass()) {
+        if (o == null || getClass() != o.getClass()) {
             return false;
         }
 
-        Issue issue = (Issue)obj;
+        Issue issue = (Issue) o;
 
         if (lineStart != issue.lineStart) {
             return false;
@@ -244,37 +272,40 @@ public class Issue {
         if (columnEnd != issue.columnEnd) {
             return false;
         }
-        if (fileName != null ? !fileName.equals(issue.fileName) : issue.fileName != null) {
+        if (!fileName.equals(issue.fileName)) {
             return false;
         }
-        if (category != null ? !category.equals(issue.category) : issue.category != null) {
+        if (!category.equals(issue.category)) {
             return false;
         }
-        if (type != null ? !type.equals(issue.type) : issue.type != null) {
+        if (!type.equals(issue.type)) {
             return false;
         }
         if (priority != issue.priority) {
             return false;
         }
-        if (message != null ? !message.equals(issue.message) : issue.message != null) {
+        if (!message.equals(issue.message)) {
             return false;
         }
-        if (description != null ? !description.equals(issue.description) : issue.description != null) {
+        if (!description.equals(issue.description)) {
             return false;
         }
-        return packageName != null ? packageName.equals(issue.packageName) : issue.packageName == null;
+        if (!packageName.equals(issue.packageName)) {
+            return false;
+        }
+        return moduleName.equals(issue.moduleName);
     }
 
     @Override
-    @SuppressWarnings("all")
     public int hashCode() {
-        int result = fileName != null ? fileName.hashCode() : 0;
-        result = 31 * result + (category != null ? category.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (priority != null ? priority.hashCode() : 0);
-        result = 31 * result + (message != null ? message.hashCode() : 0);
-        result = 31 * result + (description != null ? description.hashCode() : 0);
-        result = 31 * result + (packageName != null ? packageName.hashCode() : 0);
+        int result = fileName.hashCode();
+        result = 31 * result + category.hashCode();
+        result = 31 * result + type.hashCode();
+        result = 31 * result + priority.hashCode();
+        result = 31 * result + message.hashCode();
+        result = 31 * result + description.hashCode();
+        result = 31 * result + packageName.hashCode();
+        result = 31 * result + moduleName.hashCode();
         result = 31 * result + lineStart;
         result = 31 * result + lineEnd;
         result = 31 * result + columnStart;
