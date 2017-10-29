@@ -26,6 +26,7 @@ public class Issue implements Serializable {
 
     private final String packageName;
     private final String moduleName;
+    private final String toolName;
 
     private final int lineStart;
     private final int lineEnd;
@@ -35,6 +36,74 @@ public class Issue implements Serializable {
     private final UUID uuid;
 
     private String fingerprint;
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Issue issue = (Issue) o;
+
+        if (lineStart != issue.lineStart) {
+            return false;
+        }
+        if (lineEnd != issue.lineEnd) {
+            return false;
+        }
+        if (columnStart != issue.columnStart) {
+            return false;
+        }
+        if (columnEnd != issue.columnEnd) {
+            return false;
+        }
+        if (!fileName.equals(issue.fileName)) {
+            return false;
+        }
+        if (!category.equals(issue.category)) {
+            return false;
+        }
+        if (!type.equals(issue.type)) {
+            return false;
+        }
+        if (priority != issue.priority) {
+            return false;
+        }
+        if (!message.equals(issue.message)) {
+            return false;
+        }
+        if (!description.equals(issue.description)) {
+            return false;
+        }
+        if (!packageName.equals(issue.packageName)) {
+            return false;
+        }
+        if (!moduleName.equals(issue.moduleName)) {
+            return false;
+        }
+        return toolName.equals(issue.toolName);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = fileName.hashCode();
+        result = 31 * result + category.hashCode();
+        result = 31 * result + type.hashCode();
+        result = 31 * result + priority.hashCode();
+        result = 31 * result + message.hashCode();
+        result = 31 * result + description.hashCode();
+        result = 31 * result + packageName.hashCode();
+        result = 31 * result + moduleName.hashCode();
+        result = 31 * result + toolName.hashCode();
+        result = 31 * result + lineStart;
+        result = 31 * result + lineEnd;
+        result = 31 * result + columnStart;
+        result = 31 * result + columnEnd;
+        return result;
+    }
 
     /**
      * Creates a new instance of {@link Issue} using the specified properties.
@@ -63,6 +132,8 @@ public class Issue implements Serializable {
      *         the detail message of this issue
      * @param description
      *         the description for this issue
+     * @param toolName
+     *         the name of the tool that reported this issue
      */
     @SuppressWarnings("ParameterNumber")
     Issue(@CheckForNull final String fileName,
@@ -70,7 +141,8 @@ public class Issue implements Serializable {
             @CheckForNull final String category, @CheckForNull final String type,
             @CheckForNull final String packageName, @CheckForNull final String moduleName,
             @CheckForNull final Priority priority,
-            @CheckForNull final String message, @CheckForNull final String description) {
+            @CheckForNull final String message, @CheckForNull final String description,
+            @CheckForNull final String toolName) {
         this.fileName = defaultString(StringUtils.replace(StringUtils.strip(fileName), "\\", "/"));
 
         this.lineStart = defaultInteger(lineStart);
@@ -87,6 +159,8 @@ public class Issue implements Serializable {
         this.priority = ObjectUtils.defaultIfNull(priority, Priority.NORMAL);
         this.message = StringUtils.stripToEmpty(message);
         this.description = StringUtils.stripToEmpty(description);
+
+        this.toolName = StringUtils.stripToEmpty(toolName);
 
         uuid = UUID.randomUUID();
     }
@@ -221,6 +295,15 @@ public class Issue implements Serializable {
     }
 
     /**
+     * Returns the name of the tool that did report this issue.
+     *
+     * @return the module
+     */
+    public String getToolName() {
+        return toolName;
+    }
+
+    /**
      * Returns the finger print for this issue. Used to decide if two issues are equal even if the equals method returns
      * {@code false} since some of the properties differ due to code refactorings. The fingerprint is created by
      * analyzing the content of the affected file.
@@ -249,67 +332,4 @@ public class Issue implements Serializable {
         return String.format("%s(%d,%d): %s: %s: %s", fileName, lineStart, columnStart, type, category, message);
     }
 
-    @Override @SuppressWarnings("all")
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Issue issue = (Issue) o;
-
-        if (lineStart != issue.lineStart) {
-            return false;
-        }
-        if (lineEnd != issue.lineEnd) {
-            return false;
-        }
-        if (columnStart != issue.columnStart) {
-            return false;
-        }
-        if (columnEnd != issue.columnEnd) {
-            return false;
-        }
-        if (!fileName.equals(issue.fileName)) {
-            return false;
-        }
-        if (!category.equals(issue.category)) {
-            return false;
-        }
-        if (!type.equals(issue.type)) {
-            return false;
-        }
-        if (priority != issue.priority) {
-            return false;
-        }
-        if (!message.equals(issue.message)) {
-            return false;
-        }
-        if (!description.equals(issue.description)) {
-            return false;
-        }
-        if (!packageName.equals(issue.packageName)) {
-            return false;
-        }
-        return moduleName.equals(issue.moduleName);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = fileName.hashCode();
-        result = 31 * result + category.hashCode();
-        result = 31 * result + type.hashCode();
-        result = 31 * result + priority.hashCode();
-        result = 31 * result + message.hashCode();
-        result = 31 * result + description.hashCode();
-        result = 31 * result + packageName.hashCode();
-        result = 31 * result + moduleName.hashCode();
-        result = 31 * result + lineStart;
-        result = 31 * result + lineEnd;
-        result = 31 * result + columnStart;
-        result = 31 * result + columnEnd;
-        return result;
-    }
 }
