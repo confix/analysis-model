@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedSet;
 import java.util.UUID;
 import java.util.function.Function;
@@ -102,7 +103,7 @@ public class Issues implements Iterable<Issue>, Serializable {
         Ensure.that(issues).isNotEmpty();
 
         for (Issues container : issues) {
-            addAll(container);
+            addAll(container.elements);
         }
     }
 
@@ -293,6 +294,24 @@ public class Issues implements Iterable<Issue>, Serializable {
     }
 
     /**
+     * Returns the affected modules for all issues of this container.
+     *
+     * @return the affected modules
+     */
+    public SortedSet<String> getModules() {
+        return getProperties(issue -> issue.getModuleName());
+    }
+
+    /**
+     * Returns the affected packages for all issues of this container.
+     *
+     * @return the affected packages
+     */
+    public SortedSet<String> getPackages() {
+        return getProperties(issue -> issue.getPackageName());
+    }
+
+    /**
      * Returns the affected files for all issues of this container.
      *
      * @return the affected files
@@ -302,12 +321,21 @@ public class Issues implements Iterable<Issue>, Serializable {
     }
 
     /**
-     * Returns the number of affected files for all issues of this container.
+     * Returns the used categories for all issues of this container.
      *
-     * @return the number of affected files
+     * @return the used categories
      */
-    public int getNumberOfFiles() {
-        return getFiles().size();
+    public SortedSet<String> getCategories() {
+        return getProperties(issue -> issue.getCategory());
+    }
+
+    /**
+     * Returns the used types for all issues of this container.
+     *
+     * @return the used types
+     */
+    public SortedSet<String> getTypes() {
+        return getProperties(issue -> issue.getType());
     }
 
     /**
@@ -316,7 +344,7 @@ public class Issues implements Iterable<Issue>, Serializable {
      * @return the tools
      */
     public SortedSet<String> getToolNames() {
-        return getProperties(issue -> issue.getToolName());
+        return getProperties(issue -> issue.getOrigin());
     }
 
     /**
@@ -345,6 +373,10 @@ public class Issues implements Iterable<Issue>, Serializable {
     public <R> SortedSet<R> getProperties(final Function<? super Issue, ? extends R> propertiesMapper) {
         return elements.stream().map(propertiesMapper)
                 .collect(collectingAndThen(toSet(), ImmutableSortedSet::copyOf));
+    }
+
+    public Map<String, Long> getPropertyCount(final Function<? super Issue, ? extends String> propertiesMapper) {
+        return elements.stream().collect(groupingBy(propertiesMapper, counting()));
     }
 
     /**
@@ -391,5 +423,14 @@ public class Issues implements Iterable<Issue>, Serializable {
 
     public String getLogMessages() {
         return logMessages.toString();
+    }
+
+    public Issues withOrigin(final String id) {
+        IssueBuilder builder = new IssueBuilder();
+        Issues copy = new Issues();
+        for (Issue element : elements) {
+            copy.add(builder.copy(element).setOrigin(id).build());
+        }
+        return copy;
     }
 }

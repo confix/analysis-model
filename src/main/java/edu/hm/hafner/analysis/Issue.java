@@ -26,7 +26,7 @@ public class Issue implements Serializable {
 
     private final String packageName;
     private final String moduleName;
-    private final String toolName;
+    private final String origin;
 
     private final int lineStart;
     private final int lineEnd;
@@ -84,7 +84,7 @@ public class Issue implements Serializable {
         if (!moduleName.equals(issue.moduleName)) {
             return false;
         }
-        return toolName.equals(issue.toolName);
+        return origin.equals(issue.origin);
     }
 
     @Override
@@ -97,7 +97,7 @@ public class Issue implements Serializable {
         result = 31 * result + description.hashCode();
         result = 31 * result + packageName.hashCode();
         result = 31 * result + moduleName.hashCode();
-        result = 31 * result + toolName.hashCode();
+        result = 31 * result + origin.hashCode();
         result = 31 * result + lineStart;
         result = 31 * result + lineEnd;
         result = 31 * result + columnStart;
@@ -132,8 +132,8 @@ public class Issue implements Serializable {
      *         the detail message of this issue
      * @param description
      *         the description for this issue
-     * @param toolName
-     *         the name of the tool that reported this issue
+     * @param origin
+     *         the ID of the tool that did report this issue
      */
     @SuppressWarnings("ParameterNumber")
     Issue(@CheckForNull final String fileName,
@@ -142,7 +142,7 @@ public class Issue implements Serializable {
             @CheckForNull final String packageName, @CheckForNull final String moduleName,
             @CheckForNull final Priority priority,
             @CheckForNull final String message, @CheckForNull final String description,
-            @CheckForNull final String toolName) {
+            @CheckForNull final String origin) {
         this.fileName = defaultString(StringUtils.replace(StringUtils.strip(fileName), "\\", "/"));
 
         this.lineStart = defaultInteger(lineStart);
@@ -160,7 +160,7 @@ public class Issue implements Serializable {
         this.message = StringUtils.stripToEmpty(message);
         this.description = StringUtils.stripToEmpty(description);
 
-        this.toolName = StringUtils.stripToEmpty(toolName);
+        this.origin = StringUtils.stripToEmpty(origin);
 
         uuid = UUID.randomUUID();
     }
@@ -295,12 +295,12 @@ public class Issue implements Serializable {
     }
 
     /**
-     * Returns the name of the tool that did report this issue.
+     * Returns the ID of the tool that did report this issue.
      *
-     * @return the module
+     * @return the origin
      */
-    public String getToolName() {
-        return toolName;
+    public String getOrigin() {
+        return origin;
     }
 
     /**

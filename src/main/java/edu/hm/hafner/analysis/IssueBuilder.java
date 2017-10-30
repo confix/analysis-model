@@ -29,7 +29,7 @@ public class IssueBuilder {
     private String description;
     private String packageName;
     private String moduleName;
-    private String toolName;
+    private String origin;
 
     public IssueBuilder setFileName(final String fileName) {
         this.fileName = fileName;
@@ -76,8 +76,8 @@ public class IssueBuilder {
         return this;
     }
 
-    public IssueBuilder setToolName(final String toolName) {
-        this.toolName = toolName;
+    public IssueBuilder setOrigin(final String origin) {
+        this.origin = origin;
         return this;
     }
 
@@ -117,7 +117,7 @@ public class IssueBuilder {
         description = copy.getDescription();
         packageName = copy.getPackageName();
         moduleName = copy.getModuleName();
-        toolName = copy.getToolName();
+        origin = copy.getOrigin();
 
         return this;
     }
@@ -129,6 +129,6 @@ public class IssueBuilder {
      */
     public Issue build() {
         return new Issue(fileName, lineStart, lineEnd, columnStart, columnEnd, category, type,
-                packageName, moduleName, priority, message, description, toolName);
+                packageName, moduleName, priority, message, description, origin);
     }
 }
